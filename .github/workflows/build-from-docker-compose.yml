@@ -1,10 +1,11 @@
 name: docker-compose-actions-workflow
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-      - 'c*'
+  workflow_dispatch:
+  # push:
+  #   # Sequence of patterns matched against refs/tags
+  #   tags:
+  #     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  #     - 'c*'
 
 permissions:
     contents: write
@@ -14,14 +15,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - run: |
+          curl https://aka.ms/TunnelsCliDownload/win-x64 -L -J --output devtunnel.exe
+
+      - run: |
+          .\devtunnel.exe user login -g -d
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - run: |
+          npm i -g concurrently
       
-    # continue-on-error: true
-      - name: set permission and run
-        run: |
-          sudo chmod -R +x . && \
-          mkdir -p dist && \
-          ls && \
-          docker compose up --build && docker compose down
+      - run: |
+          concurrently "devtunnel.exe host -p 8080 --allow-anonymous --protocol https" "docker compose up --build"
+      
+    # # continue-on-error: true
+    #   - name: set permission and run
+    #     run: |
+    #       sudo chmod -R +x . && \
+    #       mkdir -p dist && \
+    #       ls && \
+    #       
           
       # - uses: fastai/workflows/ssh@master
       #   with:
