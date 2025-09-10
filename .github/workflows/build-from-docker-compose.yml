@@ -20,6 +20,7 @@ jobs:
           curl https://aka.ms/TunnelsCliDownload/linux-x64 -L -J --output devtunnel
 
       - run: |
+          sudo chmod -R +x . && \
           ./devtunnel user login -g -d
           
       - uses: actions/setup-node@v4
